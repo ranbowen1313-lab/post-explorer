@@ -1,0 +1,33 @@
+# 环境变量（含密钥，不入库）
+.env
+
+# 依赖与构建产物
+node_modules/
+dist/
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# 本地工具（Maven 便携安装，不入库）
+.tools/
+
+# SSH 密钥（不入库）
+.ssh/
+
+# 助手工作区（本地记忆，不入库）
+.workbuddy/
+
+# 题目原始压缩包（已解压到 05-resume-matching/，不入库）
+题目5-简历证据与改稿核对.zip
+
+# IDE / 系统
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+logs/

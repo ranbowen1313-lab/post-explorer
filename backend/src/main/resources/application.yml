@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: resume-match
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/resume_matcher?useSSL=false&characterEncoding=utf8mb4&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:resume}
+    password: ${SPRING_DATASOURCE_PASSWORD:resume}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update        # 开发期自动建表；上线前改 validate 或引入 Flyway
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always     # health 详情展示 db 连接状态
+
+# 应用级配置（密钥仍走环境变量，见 Docker Compose / .env）
+app:
+  llm:
+    base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    model: ${DEEPSEEK_MODEL:deepseek-chat}
+    api-key: ${DEEPSEEK_API_KEY:}
+  jwt:
+    secret: ${JWT_SECRET:}

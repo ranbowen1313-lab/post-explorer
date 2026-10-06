@@ -1,0 +1,74 @@
+:root {
+  --bg: #f3f6fa;
+  --card: #ffffff;
+  --text: #1b2d46;
+  --muted: #69819d;
+  --accent: #1967a8;
+  --border: #e0e7f0;
+  --ok: #0f6e56;
+  --err: #a32d2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.7;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+header h1 {
+  font-size: 26px;
+  margin: 0 0 4px;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-top: 24px;
+}
+
+.card h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.error {
+  color: var(--err);
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
