@@ -21,7 +21,7 @@ services:
     build: ./backend
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-resume_matcher}?useSSL=false&characterEncoding=utf8mb4&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-resume_matcher}?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-resume}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
