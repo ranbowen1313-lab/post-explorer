@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="QPuoviyTiyHO0kdRjBJzxi">
+<head data-page-node-id="GCbyENI2hYMGZMzBden7MD">
+<meta charset="UTF-8" data-page-node-id="Ibza30IPF3aMzj7BobUqRl">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="VJ3T5SlJh35SdWz8wzNpKd">
+<title>简历与岗位匹配助手 · 商务简洁版</title>
+<style>
+  :root {
+    --navy: #16324f;
+    --navy-2: #1e3a5f;
+    --accent: #2c5f8a;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --border-soft: #eef0f3;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --green: #15803d; --green-bg: #eaf5ee;
+    --red: #b91c1c;   --red-bg: #fdeeee;
+    --amber: #b45309; --amber-bg: #fdf4e3;
+    --radius: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .topbar {
+    height: 56px; background: var(--navy); color: #fff;
+    display: flex; align-items: center; padding: 0 28px; gap: 30px;
+  }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 15px; }
+  .logo-mark { width: 26px; height: 26px; background: #fff; color: var(--navy); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; border-radius: 3px; }
+  .nav { display: flex; gap: 2px; }
+  .nav a { text-decoration: none; color: #b7c3d0; padding: 6px 14px; border-radius: 4px; font-size: 14px; }
+  .nav a.active { background: rgba(255,255,255,.12); color: #fff; }
+  .spacer { flex: 1; }
+  .user { display: flex; align-items: center; gap: 9px; color: #dbe3ec; font-size: 13px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+
+  /* 主体三栏 */
+  .layout {
+    display: grid; grid-template-columns: 250px 1fr 340px; gap: 16px; padding: 20px 28px;
+    max-width: 1400px; margin: 0 auto;
+    height: calc(100vh - 56px); overflow: hidden;   /* 分栏独立滚动：工作区锁定为屏幕高度 */
+  }
+  .layout > aside,
+  .layout > main { overflow-y: auto; min-height: 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
+  .card + .card { margin-top: 14px; }
+  .card-head { padding: 12px 16px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-weight: 600; font-size: 14px; color: var(--text); }
+  .side-label { font-size: 11px; color: var(--text-3); letter-spacing: .3px; }
+  .card-body { padding: 14px 16px; }
+
+  .doc-name { font-weight: 600; font-size: 14px; }
+  .doc-meta { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .tag { display: inline-block; font-size: 11px; color: var(--text-2); background: var(--bg); padding: 2px 8px; border-radius: 3px; margin-top: 8px; }
+  .skill-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .skill-pill { font-size: 12px; padding: 2px 9px; border-radius: 3px; background: var(--bg); color: var(--text-2); border: 1px solid var(--border-soft); }
+  .kv { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; color: var(--text-2); }
+  .kv span:last-child { color: var(--text); }
+  .section-label { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 14px; margin-bottom: 4px; }
+  .brief { font-size: 13px; color: var(--text-2); }
+  .exp-item { margin-top: 8px; }
+  .exp-item .t { font-size: 13px; font-weight: 500; color: var(--text); }
+  .exp-item .d { font-size: 12px; color: var(--text-2); }
+
+  /* 中间顶部：目标岗位 */
+  .top-cards { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+  .top-cards .card + .card { margin-top: 0; }
+
+  /* 概览 */
+  .overview { display: flex; align-items: center; gap: 28px; padding: 16px; border-bottom: 1px solid var(--border-soft); }
+  .score { flex: 1; min-width: 200px; }
+  .score .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
+  .score .row b { color: var(--navy-2); font-size: 14px; }
+  .bar { height: 8px; background: var(--border-soft); border-radius: 4px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 70%; }
+  .stat-group { display: flex; gap: 30px; }
+  .stat { text-align: center; min-width: 60px; }
+  .stat .num { font-size: 20px; font-weight: 700; color: var(--text); }
+  .stat .lbl { font-size: 12px; color: var(--text-2); margin-top: 1px; }
+  .stat.matched .num { color: var(--green); }
+  .stat.missing .num { color: var(--red); }
+  .stat.confirm .num { color: var(--amber); }
+
+  .req-table { width: 100%; border-collapse: collapse; }
+  .req-table th { text-align: left; font-size: 12px; color: var(--text-3); font-weight: 500; padding: 9px 16px; border-bottom: 1px solid var(--border); background: #fafbfc; }
+  .req-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  .req-table tr:last-child td { border-bottom: none; }
+  .req-text { font-weight: 500; color: var(--text); }
+  .evi { font-size: 13px; color: var(--text-2); }
+  .evi .src { color: var(--accent); font-weight: 500; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 3px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge .dot { width: 6px; height: 6px; border-radius: 1px; }
+  .badge.matched { background: var(--green-bg); color: var(--green); }
+  .badge.matched .dot { background: var(--green); }
+  .badge.missing { background: var(--red-bg); color: var(--red); }
+  .badge.missing .dot { background: var(--red); }
+  .badge.confirm { background: var(--amber-bg); color: var(--amber); }
+  .badge.confirm .dot { background: var(--amber); }
+
+  .suggestion { border: 1px solid var(--border); border-radius: 5px; padding: 12px 14px; margin-bottom: 10px; }
+  .suggestion:last-child { margin-bottom: 0; }
+  .sug-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .kind { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 3px; }
+  .kind.rewrite { background: #e8eef7; color: var(--accent); }
+  .kind.confirm { background: var(--amber-bg); color: var(--amber); }
+  .sug-text { font-size: 13px; color: var(--text); }
+  .sug-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { border: 1px solid var(--border); background: #fff; border-radius: 4px; padding: 5px 14px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text-2); }
+  .btn.primary { background: var(--navy-2); border-color: var(--navy-2); color: #fff; }
+
+  .editor-bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border-soft); font-size: 13px; color: var(--text-2); }
+  .ver { font-size: 12px; padding: 1px 7px; border-radius: 3px; background: var(--bg); color: var(--text-2); }
+  .draft { padding: 14px 16px; }
+  .draft p { margin-bottom: 9px; font-size: 13px; }
+  .draft .hl { background: #fff3cd; padding: 0 2px; border-radius: 2px; }
+  .draft .hl-new { background: #d9efe2; padding: 0 2px; border-radius: 2px; }
+  .export-area { padding: 12px 16px; border-top: 1px solid var(--border-soft); display: flex; gap: 8px; }
+  .hint { font-size: 12px; color: var(--text-3); padding: 0 16px 12px; }
+
+  @media (max-width: 1080px) {
+    .layout { grid-template-columns: 1fr; height: auto; overflow: visible; }
+    .top-cards { grid-template-columns: 1fr; }
+    .layout > aside,
+    .layout > main { overflow-y: visible; min-height: auto; }
+  }
+</style>
+</head>
+<body data-page-node-id="20xDQhA3KXi8MbGPgtwjTw">
+
+  <header class="topbar" data-page-node-id="rGjQAHx5AJpy4W1y2mmMUS">
+    <div class="logo" data-page-node-id="jNtT8Afw5RiS4rCpFXYlMA"><span class="logo-mark" data-page-node-id="9ydDcqdBDkSFzTCAtKvRqO">简</span><span data-page-node-id="4Y81qRyM6kNBzU291CUX9b">简历与岗位匹配助手</span></div>
+    <nav class="nav" data-page-node-id="NgeEnCgFJ6Fws3ldMFGddX">
+      <a href="#" data-page-node-id="Az0YU6zqF4WztjrRDHGghE">简历</a>
+      <a href="#" data-page-node-id="8BXYh8Ug6YC0t1KDuFF5zP">岗位</a>
+      <a href="#" class="active" data-page-node-id="Fup46Ln09QVXcFMwzllDFg">匹配分析</a>
+      <a href="#" data-page-node-id="B0awwFazgzT0CuCia33xiu">修改稿</a>
+    </nav>
+    <div class="spacer" data-page-node-id="RauNCNTA0Hba2vPOeLiUUX"></div>
+    <div class="user" data-page-node-id="sAIp7SC1foZiDXNd8cqgEZ"><span data-page-node-id="k32zXOy1IFKaJA07oBSf2h">张三</span><span class="avatar" data-page-node-id="uRUnYkNK784vOVyUyfM3oO">张</span></div>
+  </header>
+
+  <div class="layout" data-page-node-id="ISIVeXGLI8ZuDiJgLKZHpO">
+
+    <!-- 左栏：当前简历（填满） -->
+    <aside data-page-node-id="f9cXoHUbArK0ae7PmEinPB">
+      <div class="card" data-page-node-id="8NZca4zvJhaQC7mGceDLBB">
+        <div class="card-head" data-page-node-id="GLXjmgt8idgeA8jYKvei9M"><span class="card-title" data-page-node-id="ahpTFaJJnoAko8RVjiENBB">当前简历</span><span class="side-label" data-page-node-id="gcT62xAyQbdVdc2onuuLWV">原稿 · 不可变</span></div>
+        <div class="card-body" data-page-node-id="WgPrS73edwwD8r7sO00gib">
+          <div class="doc-name" data-page-node-id="gdffDUiuS6V1SVPzq2A3Ov">张三 · Java 后端开发</div>
+          <div class="doc-meta" data-page-node-id="NGvAFuTmDAKLUbGQdta3mA">3 年经验 · 本科 · 2024-10 更新</div>
+          <span class="tag" data-page-node-id="HgcEgC3z82QDPMQj9HM2fv">已创建</span>
+
+          <div class="section-label" data-page-node-id="KnaGe9aChaSWHWcdqddzHA">技能</div>
+          <div class="skill-list" data-page-node-id="6NqziY6GomSIOnlXcCpA4B">
+            <span class="skill-pill" data-page-node-id="WJCeu4oePR2mGTEPk8BtWY">Java</span>
+            <span class="skill-pill" data-page-node-id="CwBfCPWIILFcJgQ5geJYLD">Spring Boot</span>
+            <span class="skill-pill" data-page-node-id="2SofnDYWjSoAbXeItBA5Al">MySQL</span>
+            <span class="skill-pill" data-page-node-id="O6QFQUWXzlv2NMinaUEihs">Linux</span>
+            <span class="skill-pill" data-page-node-id="jjZDTJOC2D722a8irNIBUM">Git</span>
+            <span class="skill-pill" data-page-node-id="sCF3rV2DG5sKm22oVjev7D">Docker</span>
+          </div>
+
+          <div class="section-label" data-page-node-id="lOQiKhVwZPaNcqlBGBk7Ad">自我评价</div>
+          <div class="brief" data-page-node-id="U9GceD8U4gPOsSB9gwnaCy">3 年 Java 后端开发经验，专注高并发订单系统与数据库优化，具备良好的工程规范与团队协作能力。</div>
+
+          <div class="section-label" data-page-node-id="qGPNc6fpvvHgi0MYpa6yFC">工作经历</div>
+          <div class="exp-item" data-page-node-id="RDvMacIz91BvPIPWt8wwEk">
+            <div class="t" data-page-node-id="eLllwmHBfGzGK4DaG4VNiy">某电商 · 后端开发工程师</div>
+            <div class="d" data-page-node-id="xRattOJPwH45vgvqpieKIc">2021 - 至今 · 订单中心</div>
+          </div>
+          <div class="exp-item" data-page-node-id="BIDwJB5Vup0O8JieiVJsNr">
+            <div class="t" data-page-node-id="0GQ4gMJRSro9K9Tuyu9F4X">某外包 · Java 开发</div>
+            <div class="d" data-page-node-id="PW573l6i8JPZnLaZuvrcM1">2020 - 2021 · 内部系统</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中间：目标岗位 + 分析结果 + 建议 -->
+    <main data-page-node-id="I6dilQoHbXBrGipgG0pP6r">
+      <div class="top-cards" data-page-node-id="YzkgbMk0bPUai7Mvamol7k">
+        <div class="card" data-page-node-id="x6WG1BoGE0HYxGKSBaQZ6K">
+          <div class="card-head" data-page-node-id="TSrC1VzG6CnzNRZ4cND7FF"><span class="card-title" data-page-node-id="k1TXSrOHRa0D5dzbL35xLH">目标岗位</span><span class="side-label" data-page-node-id="BBNyAOFqWcepmStAdkPmEa">岗位描述</span></div>
+          <div class="card-body" data-page-node-id="HdcGyKjY9fNhWqcxFEjP7U">
+            <div class="doc-name" data-page-node-id="UE8dP7voTEBIxzXgWEosBW">Java 后端开发工程师</div>
+            <div class="doc-meta" data-page-node-id="xB3zV4nVHAobi5FA7ICdcd">某互联网公司</div>
+            <div class="kv" data-page-node-id="SdivgMre3UzisZnPrAFEVe"><span data-page-node-id="nbTDlG2L4gvAhMgMa2HqCw">要求数</span><span data-page-node-id="FdIIQmhL1X3pnuSK5NtAfK">5</span></div>
+            <div class="kv" data-page-node-id="VqHAFEyCotjffUHrADnvew"><span data-page-node-id="tW6Rz12kqq84i8DmXF9izW">工作年限</span><span data-page-node-id="Lr6IXE8ZLEEwH87wEfHG5q">3-5 年</span></div>
+            <div class="kv" data-page-node-id="pGtDv63JJHFBG0IDOczjQS"><span data-page-node-id="MGYYyN5z7BOVK4wMdBCRWd">工作地点</span><span data-page-node-id="ceAGtLOEVLPQmjqcpOecHJ">深圳</span></div>
+          </div>
+        </div>
+        
+      </div>
+
+      <div class="card" data-page-node-id="DLmZy5FQsfwEGYlqq798IZ">
+        <div class="card-head" data-page-node-id="7wBaktUm0BLrvFx8yvkLIx"><span class="card-title" data-page-node-id="oDMrQT5YRs5cB7WF9QhdIp">匹配分析结果</span><span class="side-label" data-page-node-id="GVbcwzuktCYGuHeoaGpAOZ">分析快照 · 2024-10-07 10:30</span></div>
+        <div class="overview" data-page-node-id="ZJrIpcoM5HlXUNIOBqmq6n">
+          <div class="score" data-page-node-id="1FFtmoanPLrOPufg7Igqpa">
+            <div class="row" data-page-node-id="A00GCehflQ805XOO0DHzP4"><span data-page-node-id="5Tr5nzPyi8lWwzMffTEAQa">综合匹配度</span><b data-page-node-id="Ko4W9uHxEBsL3jw2RVADE3">70%</b></div>
+            <div class="bar" data-page-node-id="tQ2PtA3t5CpkLwtJXJEim3"><i data-page-node-id="teWnAm3Y3r1xH9B7n6hmpN"></i></div>
+          </div>
+          <div class="stat-group" data-page-node-id="wZ6rXRv4i92VyE0ODlaWVq">
+            <div class="stat matched" data-page-node-id="L3xLyII6h7QaSrblGc9HRD"><div class="num" data-page-node-id="BHMhRzryTSHitJibwJZ9Yl">3</div><div class="lbl" data-page-node-id="FwpWXWfnxHnNTmF1RuvNU8">已体现</div></div>
+            <div class="stat missing" data-page-node-id="FzGIABZpRKFxBSiKlFGIUT"><div class="num" data-page-node-id="AcZ6upxxTAjUQ9YTaHrdZC">1</div><div class="lbl" data-page-node-id="ZX1I6mBF8OwQVsutH7ttcD">未体现</div></div>
+            <div class="stat confirm" data-page-node-id="jObOMauLKAWLNHBCeFhq7O"><div class="num" data-page-node-id="Uu8UIaPLZzDFAJcaPB0LyH">1</div><div class="lbl" data-page-node-id="zULcOyGhNTIp98Fo8LGAqx">需补充确认</div></div>
+          </div>
+        </div>
+        <table class="req-table" data-page-node-id="UyEFyoQm54l8NyzROHn3qu">
+          <thead data-page-node-id="7TZ91bZa9zLnbzYNjelElk">
+            <tr data-page-node-id="OJS0qOQqARALsRHjEEwxeA"><th style="width:32%" data-page-node-id="JCpFoqmu1c9fKosXG6dand">岗位要求</th><th style="width:42%" data-page-node-id="39Vs7Si1KkSDjXJQtJ9y9i">简历证据</th><th style="width:26%" data-page-node-id="7RH9GRgwlKXnaaXShDlpX5">匹配状态</th></tr>
+          </thead>
+          <tbody data-page-node-id="Njng0iGxhfcklLztlNSKTy">
+            <tr data-page-node-id="2C47Gwxrngg8Tk0AapibX7">
+              <td class="req-text" data-page-node-id="EQuGNnIjyG2fn6nCv17wKo">熟练掌握 Java，有 Spring Boot 开发经验</td>
+              <td class="evi" data-page-node-id="lLkgXPqGslb0ANJVZDl1VP"><span class="src" data-page-node-id="UwBWr99VEMzF97PMrntMhX">项目经历：</span>「订单中心」微服务，基于 Spring Boot 2.x 开发，处理日均 10w+ 订单</td>
+              <td data-page-node-id="zvImbCF8RwqofgYyOsyCo2"><span class="badge matched" data-page-node-id="5JxcgxwPzYh7TJjc0YcuMl"><span class="dot" data-page-node-id="8klzVFXEvhH4czPUR9B6H2"></span>已体现</span></td>
+            </tr>
+            <tr data-page-node-id="LPHkrsLETzgXIOLrPOB2v3">
+              <td class="req-text" data-page-node-id="MYy1RB9ba9yO26kAYImvjq">熟悉 MySQL 数据库设计与性能调优</td>
+              <td class="evi" data-page-node-id="9TNmsr65QTnGV52Pi7fnMB"><span class="src" data-page-node-id="7HAL5R55bSN2rC2QVxpgz9">技能：</span>MySQL 索引优化、慢查询分析，主导库表分库分表改造</td>
+              <td data-page-node-id="PBebEBWswTzQ3MQTe1R5HC"><span class="badge matched" data-page-node-id="oP8Ej59bXpRwydcZ2Oikjk"><span class="dot" data-page-node-id="GRNjHcqkutMU0VSHFTmvz3"></span>已体现</span></td>
+            </tr>
+            <tr data-page-node-id="X5gmmUCtpQc32dFnIkOsLE">
+              <td class="req-text" data-page-node-id="H4AEBtlKhmFbzAysFcUDnX">熟悉 Redis 缓存</td>
+              <td class="evi" data-page-node-id="4qFMqBHgn99kvGfrlztW9H">简历中未提及 Redis 相关经历</td>
+              <td data-page-node-id="jrHURMJnj30NJHLoBtzN2o"><span class="badge missing" data-page-node-id="0DK8oShDQYr4L7O4izqVAw"><span class="dot" data-page-node-id="c9dKony0GwvuLRlT9tN3xj"></span>未体现</span></td>
+            </tr>
+            <tr data-page-node-id="DEjqVqBhfhDfB4qQwzw2bZ">
+              <td class="req-text" data-page-node-id="aEpF6MDKqerhFBapnYz1Gy">了解微服务架构（Spring Cloud）</td>
+              <td class="evi" data-page-node-id="pKcZ2dKRGmdUGpXFw20DxQ"><span class="src" data-page-node-id="zIwGsuzEOslLNqpe9JAubG">项目经历：</span>「参与过分布式系统的搭建」——表述模糊，未明确技术栈</td>
+              <td data-page-node-id="mRL6KAN3tsUB4PqCbc4MEe"><span class="badge confirm" data-page-node-id="qURNfWgefBeYH5SaMMuFiP"><span class="dot" data-page-node-id="UjBRFbutqSNwn1TNe7o82x"></span>需补充确认</span></td>
+            </tr>
+            <tr data-page-node-id="oAadWq6VUx3urxgrnSyHGB">
+              <td class="req-text" data-page-node-id="Ms7qYQfEDUKuUY04mToHI8">良好的团队协作与沟通能力</td>
+              <td class="evi" data-page-node-id="dEUdXF6Egmb1grJPavv8Rl"><span class="src" data-page-node-id="EeSx4ubAO0PrOS5BQSGLyz">工作经历：</span>带领 3 人小组完成跨部门协作项目</td>
+              <td data-page-node-id="RY1i1VbWEdvFEQYCh2iW2f"><span class="badge matched" data-page-node-id="ZwtgH9VWnfC14Uo3SJjc2b"><span class="dot" data-page-node-id="zotZYQbFj4btAHxOYr3NYH"></span>已体现</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" data-page-node-id="gyVIk9lBkgt2vsu6CFiDrI">
+        <div class="card-head" data-page-node-id="4vjwRIg8zLznAqk05ash2c"><span class="card-title" data-page-node-id="nKeYzQwgatcPYNPLewhM9T">改稿建议</span><span class="side-label" data-page-node-id="QDvRoEjce2BnYvXPi50KPh">3 条</span></div>
+        <div class="card-body" data-page-node-id="uC4rvvTJHAkZEG17vnHb3G">
+          <div class="suggestion" data-page-node-id="S2D8wMhgSLWgDoG2iW1jYw">
+            <div class="sug-head" data-page-node-id="bDeHUGlj6ZiZT7qzbGTfQg"><span class="kind rewrite" data-page-node-id="wXeA8xvef64gmDZ1B5k7wG">改稿</span><span style="font-size:12px;color:var(--text-3)" data-page-node-id="dHdTkFNtAOiYqlLWlWrmpS">针对「Redis 缓存」未体现</span></div>
+            <div class="sug-text" data-page-node-id="9pEVvBN2Ko0MoCtxRXEEDd">在「技能」中补充 Redis 缓存使用经历，例如「使用 Redis 实现热点数据缓存与分布式锁」。</div>
+            <div class="sug-actions" data-page-node-id="bI0l8vY3IF3rKr475BWyOO"><button class="btn primary" data-page-node-id="JQbDrFfGuHdwdiRAu1PAwe">采纳</button><button class="btn" data-page-node-id="sc4lnBymduaX6OXdtIHIGG">忽略</button></div>
+          </div>
+          <div class="suggestion" data-page-node-id="kNXmg4WfAgqgbixIUWb5Eo">
+            <div class="sug-head" data-page-node-id="hglqGyUoZZfDuRnswyzdJf"><span class="kind confirm" data-page-node-id="qzcbEFiW6HiTAozmbFgi6k">需确认</span><span style="font-size:12px;color:var(--text-3)" data-page-node-id="Aey979BFZOgQWqfaIS90Yg">针对「Spring Cloud」表述模糊</span></div>
+            <div class="sug-text" data-page-node-id="zkCIrt1JrgSqWARBvbWSCx">请确认是否参与过 Spring Cloud 微服务项目？若是，建议补充具体组件（如 Nacos / Gateway / OpenFeign）。</div>
+            <div class="sug-actions" data-page-node-id="1hrF0Tq1m4ELvtpu8GLIPN"><button class="btn primary" data-page-node-id="zwYB2B7ES4yC4j62Li7ifI">确认并补充</button><button class="btn" data-page-node-id="D9zEKOfqxYljJFfJNGFrlb">忽略</button></div>
+          </div>
+          <div class="suggestion" data-page-node-id="u5cWPHrccY6bx4gUwF6CMV">
+            <div class="sug-head" data-page-node-id="ACtv4BtLwxFKyzi9PLPb6m"><span class="kind rewrite" data-page-node-id="KzXMTpt6L49XIbb7HQzShg">改稿</span><span style="font-size:12px;color:var(--text-3)" data-page-node-id="1cDamW6DanAS1Vab3eGdyy">措辞优化</span></div>
+            <div class="sug-text" data-page-node-id="xuachmSAms9oh9ICp5W5cF">将「分布式系统」具体化为「Spring Cloud 微服务」相关技术栈，提升与岗位要求的关键词匹配。</div>
+            <div class="sug-actions" data-page-node-id="Rid3hiVVhb4Ie3goQ1pZf7"><button class="btn primary" data-page-node-id="Qo87OGpy50wSNaDUpc9N5k">采纳</button><button class="btn" data-page-node-id="4CNbHQCNAxEFV2ydORmUW1">忽略</button></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 右栏：修改稿（填满） -->
+    <aside data-page-node-id="QX5V8jeFqjicrdGurR1DQP">
+      <div class="card" data-page-node-id="thOCYvrWk2eCc4sV0SbCIJ">
+        <div class="card-head" data-page-node-id="qskNFT9UaiTda2jjlu1OlI"><span class="card-title" data-page-node-id="df8bVlC3Uyn7MWJXmw6Mfn">修改稿</span><span class="ver" data-page-node-id="mszCkomdiJ1yCGB80dZof4">v1 草稿</span></div>
+        <div class="editor-bar" data-page-node-id="u2wDx5teHRMNBVV1PVFJoW"><span data-page-node-id="z3AMidcftsmXsLiwbm0AQA">当前版本</span><span class="ver" data-page-node-id="oEpNOGLCbJ55xZxGWwS8BD">v1</span><span style="color:var(--text-3)" data-page-node-id="8uEnsg0rJLf06qFXoT9o9N">· 未保存</span></div>
+        <div class="draft" data-page-node-id="hnGftEihVM0vCg6HPUaJj9">
+          <p data-page-node-id="FwNnITOr5pfSEM8WS7xDg9"><strong data-page-node-id="mhIexSeyHAbS6Em7LQ5CcV">技能</strong></p>
+          <p data-page-node-id="l7Swuy73SouAN0q44OqGIz">Java、Spring Boot、MySQL、Linux、<span class="hl-new" data-page-node-id="1p4sTLQR2c7LxqNcORtXXl">Redis（热点缓存、分布式锁）</span></p>
+          <p data-page-node-id="GEw6TqkzrurIDyQCXdQFq6"><strong data-page-node-id="Kl2R1TRilhjodhMLjZx6mk">项目经历</strong></p>
+          <p data-page-node-id="E5ZfWOqvQkrNKUnF48IFqr">参与<span class="hl" data-page-node-id="xRHnRw3H3IKZdS0iDl4STu">分布式系统</span>的搭建，负责订单中心模块……</p>
+        </div>
+        <div class="export-area" data-page-node-id="ZuSsHwEIpXIlH0P1JGcP9j">
+          <button class="btn primary" style="flex:1" data-page-node-id="EcRrPWOc9waVNumDkG0G5H">保存修改稿</button>
+          <button class="btn" style="flex:1" data-page-node-id="ooCfOsGRm1XQLbvDF4U8j6">预览导出 Markdown</button>
+        </div>
+        <div class="hint" data-page-node-id="EjxwIiGgBgMnP3bGznhrMx">已采纳的建议会幂等写入草稿；保存后生成版本 v2。</div>
+      </div>
+    </aside>
+
+  </div>
+
+</body>
+</html>

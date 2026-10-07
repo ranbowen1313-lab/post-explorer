@@ -33,4 +33,5 @@ app:
     model: ${DEEPSEEK_MODEL:deepseek-chat}
     api-key: ${DEEPSEEK_API_KEY:}
   jwt:
-    secret: ${JWT_SECRET:}
+    secret: ${JWT_SECRET:dev-secret-0123456789abcdef0123456789abcdef}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
