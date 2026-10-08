@@ -172,9 +172,9 @@ public class AnalysisService {
             return;
         }
         String userKey = authService.getApiKey(analysis.getUserId());
-        if (userKey == null || userKey.isBlank()) {
+        if ((userKey == null || userKey.isBlank()) && !deepSeekClient.hasFallbackKey()) {
             analysis.setStatus("FAILED");
-            analysis.setErrorMessage("请先配置你的 API Key（在「匹配分析」页设置）");
+            analysis.setErrorMessage("请先配置你的 API Key（或在服务端环境变量设置 DEEPSEEK_API_KEY）");
         } else {
             String rawContent = null;
             try {

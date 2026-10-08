@@ -126,8 +126,8 @@ public class ResumeService {
 
     public String format(Long userId, String raw) {
         String userKey = authService.getApiKey(userId);
-        if (userKey == null || userKey.isBlank()) {
-            throw new ApiException(400, "请先配置你的 API Key");
+        if ((userKey == null || userKey.isBlank()) && !deepSeekClient.hasFallbackKey()) {
+            throw new ApiException(400, "请先配置你的 API Key（或在服务端环境变量设置 DEEPSEEK_API_KEY）");
         }
         return deepSeekClient.chat(userKey, FORMAT_SYSTEM_PROMPT, raw, false);
     }

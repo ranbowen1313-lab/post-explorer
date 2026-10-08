@@ -16,13 +16,20 @@ public class DeepSeekClient {
 
     private final RestClient restClient;
     private final String model;
+    private final String fallbackApiKey;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public DeepSeekClient(
             @Value("${app.llm.base-url:https://api.deepseek.com}") String baseUrl,
-            @Value("${app.llm.model:deepseek-chat}") String model) {
+            @Value("${app.llm.model:deepseek-chat}") String model,
+            @Value("${app.llm.api-key:}") String fallbackApiKey) {
         this.model = model;
+        this.fallbackApiKey = fallbackApiKey;
         this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    }
+
+    public boolean hasFallbackKey() {
+        return fallbackApiKey != null && !fallbackApiKey.isBlank();
     }
 
     public String chat(String apiKey, String system, String user) {
@@ -30,6 +37,8 @@ public class DeepSeekClient {
     }
 
     public String chat(String apiKey, String system, String user, boolean jsonMode) {
+        // 用户自助 key 优先，环境变量 key 兜底
+        String key = (apiKey != null && !apiKey.isBlank()) ? apiKey : fallbackApiKey;
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", model);
         body.put("messages", List.of(
@@ -42,7 +51,7 @@ public class DeepSeekClient {
         }
         String response = restClient.post()
                 .uri("/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
+                .header("Authorization", "Bearer " + key)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
