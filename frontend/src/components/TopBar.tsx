@@ -119,7 +119,7 @@ export default function TopBar({ view, onViewChange }: Props) {
           <div className="modal">
             <div className="modal-title">设置 DeepSeek API Key</div>
             <div className="modal-body">
-              <div className="modal-hint">你的 API Key 仅自己可见，加密存储。</div>
+              <div className="modal-hint">你的 API Key 仅当前会话有效，不持久化存储；每次重新登录需重新配置。</div>
               <input
                 type="password"
                 className="key-input"

@@ -5,7 +5,6 @@ import com.lab110.resumematch.auth.dto.LoginRequest;
 import com.lab110.resumematch.auth.dto.RegisterRequest;
 import com.lab110.resumematch.auth.dto.UserResponse;
 import com.lab110.resumematch.common.ApiException;
-import com.lab110.resumematch.common.CryptoUtil;
 import com.lab110.resumematch.llm.DeepSeekClient;
 import com.lab110.resumematch.user.User;
 import com.lab110.resumematch.user.UserRepository;
@@ -15,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthService {
@@ -22,15 +22,16 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final CryptoUtil cryptoUtil;
     private final DeepSeekClient deepSeekClient;
 
+    // API Key 仅存内存（会话级），不落库、不落容器持久化；服务重启或用户重新登录后需重新配置
+    private final Map<Long, String> apiKeyCache = new ConcurrentHashMap<>();
+
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       CryptoUtil cryptoUtil, DeepSeekClient deepSeekClient) {
+                       DeepSeekClient deepSeekClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
-        this.cryptoUtil = cryptoUtil;
         this.deepSeekClient = deepSeekClient;
     }
 
@@ -62,27 +63,17 @@ public class AuthService {
     }
 
     public void setApiKey(Long userId, String apiKey) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(401, "用户不存在"));
-        user.setDeepseekApiKey(cryptoUtil.encrypt(apiKey));
-        userRepository.save(user);
+        apiKeyCache.put(userId, apiKey);
     }
 
     public boolean hasApiKey(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null && user.getDeepseekApiKey() != null && !user.getDeepseekApiKey().isBlank();
+        String k = apiKeyCache.get(userId);
+        return k != null && !k.isBlank();
     }
 
     public String getApiKey(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user == null || user.getDeepseekApiKey() == null || user.getDeepseekApiKey().isBlank()) {
-            return null;
-        }
-        try {
-            return cryptoUtil.decrypt(user.getDeepseekApiKey());
-        } catch (Exception e) {
-            return null;
-        }
+        String k = apiKeyCache.get(userId);
+        return (k == null || k.isBlank()) ? null : k;
     }
 
     public Map<String, Object> testApiKey(String apiKey) {
