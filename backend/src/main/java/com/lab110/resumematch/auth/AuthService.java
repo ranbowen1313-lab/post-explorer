@@ -6,10 +6,15 @@ import com.lab110.resumematch.auth.dto.RegisterRequest;
 import com.lab110.resumematch.auth.dto.UserResponse;
 import com.lab110.resumematch.common.ApiException;
 import com.lab110.resumematch.common.CryptoUtil;
+import com.lab110.resumematch.llm.DeepSeekClient;
 import com.lab110.resumematch.user.User;
 import com.lab110.resumematch.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
+
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -18,13 +23,15 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CryptoUtil cryptoUtil;
+    private final DeepSeekClient deepSeekClient;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       CryptoUtil cryptoUtil) {
+                       CryptoUtil cryptoUtil, DeepSeekClient deepSeekClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.cryptoUtil = cryptoUtil;
+        this.deepSeekClient = deepSeekClient;
     }
 
     public AuthResponse register(RegisterRequest req) {
@@ -76,6 +83,29 @@ public class AuthService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public Map<String, Object> testApiKey(String apiKey) {
+        try {
+            deepSeekClient.chat(apiKey, "你是连接测试助手。", "请回复 ok", false);
+            return Map.of("ok", true);
+        } catch (Exception e) {
+            return Map.of("ok", false, "error", classifyKeyError(e));
+        }
+    }
+
+    private String classifyKeyError(Exception e) {
+        if (e instanceof HttpClientErrorException hce) {
+            int code = hce.getStatusCode().value();
+            if (code == 401 || code == 403) {
+                return "密钥无效或无权限";
+            }
+            return "服务返回错误（HTTP " + code + "）";
+        }
+        if (e instanceof ResourceAccessException) {
+            return "网络不可用或连接超时";
+        }
+        return "连接失败";
     }
 
     private UserResponse toDto(User u) {

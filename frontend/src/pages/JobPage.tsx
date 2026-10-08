@@ -27,7 +27,14 @@ export default function JobPage() {
 
   async function onCreate(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !description.trim()) return
+    if (!title.trim()) {
+      setError('请填写岗位名称')
+      return
+    }
+    if (!description.trim()) {
+      setError('请填写岗位描述')
+      return
+    }
     setCreating(true)
     setError('')
     try {

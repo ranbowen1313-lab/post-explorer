@@ -52,4 +52,9 @@ public class AuthController {
     public Map<String, Boolean> apiKeyStatus() {
         return Map.of("configured", authService.hasApiKey(SecurityUtils.currentUserId()));
     }
+
+    @PostMapping("/api-key/test")
+    public Map<String, Object> testApiKey(@Valid @RequestBody ApiKeyRequest req) {
+        return authService.testApiKey(req.apiKey());
+    }
 }

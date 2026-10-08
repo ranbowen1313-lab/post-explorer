@@ -39,6 +39,9 @@ public class Suggestion {
     @Column(nullable = false)
     private String decision = "PENDING";
 
+    @Column(name = "applied_text", columnDefinition = "TEXT")
+    private String appliedText;
+
     public Long getId() {
         return id;
     }
@@ -105,5 +108,13 @@ public class Suggestion {
 
     public void setDecision(String decision) {
         this.decision = decision;
+    }
+
+    public String getAppliedText() {
+        return appliedText;
+    }
+
+    public void setAppliedText(String appliedText) {
+        this.appliedText = appliedText;
     }
 }

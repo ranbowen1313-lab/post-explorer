@@ -8,6 +8,7 @@ export default function ResumePage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [creating, setCreating] = useState(false)
+  const [formatting, setFormatting] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -27,7 +28,14 @@ export default function ResumePage() {
 
   async function onCreate(e: FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !content.trim()) return
+    if (!title.trim()) {
+      setError('请填写简历标题')
+      return
+    }
+    if (!content.trim()) {
+      setError('请填写简历内容')
+      return
+    }
     setCreating(true)
     setError('')
     try {
@@ -39,6 +47,23 @@ export default function ResumePage() {
       setError(e2 instanceof ApiError ? e2.message : '创建失败')
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleFormat() {
+    if (!content.trim()) {
+      setError('请先粘贴简历内容，再使用 AI 排版')
+      return
+    }
+    setFormatting(true)
+    setError('')
+    try {
+      const res = await api.resumes.format(content.trim())
+      setContent(res.formatted)
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : '排版失败')
+    } finally {
+      setFormatting(false)
     }
   }
 
@@ -61,7 +86,13 @@ export default function ResumePage() {
       <div className="card-body">
         <form className="create-form" onSubmit={onCreate}>
           <input className="create-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="简历标题（如：Java 后端简历）" />
-          <textarea className="create-area" value={content} onChange={(e) => setContent(e.target.value)} placeholder="粘贴简历正文…" rows={5} />
+          <textarea className="create-area" value={content} onChange={(e) => setContent(e.target.value)} placeholder="粘贴简历正文，或点击「AI 排版」自动整理成规范模板…" rows={8} />
+          <div className="format-row">
+            <button type="button" className="btn" onClick={handleFormat} disabled={formatting || !content.trim()}>
+              {formatting ? '排版中…' : 'AI 排版'}
+            </button>
+            <span className="format-hint">将原始简历自动整理为标准模板格式</span>
+          </div>
           <button className="btn primary" type="submit" disabled={creating}>
             {creating ? '创建中…' : '创建简历'}
           </button>

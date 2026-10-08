@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "analyses")
@@ -33,6 +33,9 @@ public class Analysis {
     @Column(name = "job_snapshot", nullable = false, columnDefinition = "TEXT")
     private String jobSnapshot;
 
+    @Column(name = "draft_content", columnDefinition = "TEXT")
+    private String draftContent;
+
     @Column(nullable = false)
     private String status;
 
@@ -41,10 +44,10 @@ public class Analysis {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "completed_at")
-    private LocalDateTime completedAt;
+    private Instant completedAt;
 
     public Long getId() {
         return id;
@@ -90,6 +93,14 @@ public class Analysis {
         this.jobSnapshot = jobSnapshot;
     }
 
+    public String getDraftContent() {
+        return draftContent;
+    }
+
+    public void setDraftContent(String draftContent) {
+        this.draftContent = draftContent;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -106,15 +117,15 @@ public class Analysis {
         this.errorMessage = errorMessage;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getCompletedAt() {
+    public Instant getCompletedAt() {
         return completedAt;
     }
 
-    public void setCompletedAt(LocalDateTime completedAt) {
+    public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;
     }
 }

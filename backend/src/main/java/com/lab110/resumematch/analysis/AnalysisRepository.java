@@ -10,4 +10,6 @@ public interface AnalysisRepository extends JpaRepository<Analysis, Long> {
     Optional<Analysis> findByIdAndUserId(Long id, Long userId);
 
     List<Analysis> findByResumeIdAndUserIdOrderByCreatedAtDesc(Long resumeId, Long userId);
+
+    List<Analysis> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

@@ -55,8 +55,21 @@ export interface AnalysisItem {
   errorMessage: string | null
   createdAt: string
   completedAt: string | null
+  resumeId: number
+  jobId: number
+  resumeSnapshot: string
+  jobSnapshot: string
+  draftContent: string
   requirements: RequirementItem[]
   suggestions: SuggestionItem[]
+}
+
+export interface RevisionItem {
+  id: number
+  resumeId: number
+  versionNo: number
+  content: string
+  savedAt: string
 }
 
 export interface PingResult {
@@ -153,6 +166,12 @@ export const api = {
 
   getApiKeyStatus: () => request<{ configured: boolean }>('/api/auth/api-key'),
 
+  testApiKey: (apiKey: string) =>
+    request<{ ok: boolean; error?: string }>('/api/auth/api-key/test', {
+      method: 'POST',
+      body: JSON.stringify({ apiKey }),
+    }),
+
   resumes: {
     list: () => request<ResumeItem[]>('/api/resumes'),
     create: (title: string, content: string) =>
@@ -162,6 +181,22 @@ export const api = {
       }),
     get: (id: number) => request<ResumeItem>(`/api/resumes/${id}`),
     remove: (id: number) => request<void>(`/api/resumes/${id}`, { method: 'DELETE' }),
+    updateDraft: (id: number, content: string) =>
+      request<ResumeItem>(`/api/resumes/${id}/draft`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+      }),
+    saveRevision: (id: number, content: string) =>
+      request<RevisionItem>(`/api/resumes/${id}/revisions`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+      }),
+    listRevisions: (id: number) => request<RevisionItem[]>(`/api/resumes/${id}/revisions`),
+    format: (raw: string) =>
+      request<{ formatted: string }>('/api/resumes/format', {
+        method: 'POST',
+        body: JSON.stringify({ raw }),
+      }),
   },
 
   jobs: {
@@ -182,7 +217,63 @@ export const api = {
         body: JSON.stringify({ jobId }),
       }),
     get: (id: number) => request<AnalysisItem>(`/api/analyses/${id}`),
+    list: () => request<AnalysisItem[]>('/api/analyses'),
+    remove: (id: number) => request<void>(`/api/analyses/${id}`, { method: 'DELETE' }),
     listByResume: (resumeId: number) => request<AnalysisItem[]>(`/api/resumes/${resumeId}/analyses`),
     retry: (id: number) => request<AnalysisItem>(`/api/analyses/${id}/retry`, { method: 'POST' }),
+    updateDraft: (id: number, content: string) =>
+      request<AnalysisItem>(`/api/analyses/${id}/draft`, {
+        method: 'PUT',
+        body: JSON.stringify({ content }),
+      }),
   },
+
+  suggestions: {
+    accept: (id: number, replacementText?: string) =>
+      request<{ decision: string; draftContent: string }>(`/api/suggestions/${id}/accept`, {
+        method: 'POST',
+        body: JSON.stringify({ replacementText: replacementText ?? null }),
+      }),
+    ignore: (id: number) => request<{ decision: string }>(`/api/suggestions/${id}/ignore`, { method: 'POST' }),
+    reset: (id: number) =>
+      request<{ decision: string; draftContent: string }>(`/api/suggestions/${id}/reset`, { method: 'POST' }),
+  },
+}
+
+export async function downloadExport(id: number) {
+  const token = getToken()
+  const res = await fetch(`/api/resumes/${id}/export`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    throw new ApiError(res.status, '导出失败')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'resume.md'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+export async function downloadAnalysisExport(id: number) {
+  const token = getToken()
+  const res = await fetch(`/api/analyses/${id}/export`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    throw new ApiError(res.status, '导出失败')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'resume.md'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }

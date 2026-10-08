@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,15 +26,20 @@ public class DeepSeekClient {
     }
 
     public String chat(String apiKey, String system, String user) {
-        Map<String, Object> body = Map.of(
-                "model", model,
-                "messages", List.of(
-                        Map.of("role", "system", "content", system),
-                        Map.of("role", "user", "content", user)
-                ),
-                "response_format", Map.of("type", "json_object"),
-                "temperature", 0.2
-        );
+        return chat(apiKey, system, user, true);
+    }
+
+    public String chat(String apiKey, String system, String user, boolean jsonMode) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("model", model);
+        body.put("messages", List.of(
+                Map.of("role", "system", "content", system),
+                Map.of("role", "user", "content", user)
+        ));
+        body.put("temperature", 0.2);
+        if (jsonMode) {
+            body.put("response_format", Map.of("type", "json_object"));
+        }
         String response = restClient.post()
                 .uri("/chat/completions")
                 .header("Authorization", "Bearer " + apiKey)

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,10 +39,12 @@ public class AnalysisService {
             """;
 
     private static final String JUDGE_SYSTEM_PROMPT = """
-            你是简历-岗位匹配助手。请判断岗位要求是否在简历中体现。
-            硬性约束：1. 只基于「简历相关片段」判断，证据必须逐字引用片段原文，找不到就用空字符串，绝不编造；2. 缺少的信息以补充问题单列，不得当作事实。
+            你是简历-岗位匹配助手。判断岗位要求是否在简历中体现，按三种情况分别处理：
+            1. MATCHED（已体现）：evidence 逐字引用简历原文证据；suggestion.kind 用 REWRITE 给出「优化表达」建议（original_passage 为原文、suggested_passage 为优化后）。只优化表达、不夸大事实，不得增加简历中没有的经历、技能、年限、数字或业绩。
+            2. NOT_MATCHED（未体现）：当前简历找不到该要求的证据。evidence 留空；reason 客观说明「简历中未体现该要求」；suggestion.kind 用 NONE。不得推断「用户不会/不具备」等主观判断，不得编造任何事实写入。
+            3. NEED_CONFIRM（需确认）：简历中有相关线索，但具体责任、范围或结果不明确。suggestion.kind 用 CONFIRM，在 confirmation_question 中列出补充问题（如：具体负责什么、涉及范围、达到什么结果）；这些信息在用户确认前不作为事实，不得写入正文或改稿。
             只返回一个 JSON 对象，不要代码块、不要额外文字，结构如下：
-            {"requirement":"岗位要求","evidence":"证据原文引用（找不到则空字符串）","match_status":"MATCHED 或 NOT_MATCHED 或 NEED_CONFIRM","reason":"判断原因","suggestion":{"kind":"REWRITE 或 CONFIRM 或 NONE","original_passage":"原段落（REWRITE 时填）","suggested_passage":"建议段落（REWRITE 时填）","rewrite_reason":"修改理由（REWRITE 时填）","confirmation_question":"补充问题（CONFIRM 时填）"}}
+            {"requirement":"岗位要求","evidence":"证据原文（MATCHED 时逐字引用，否则空字符串）","match_status":"MATCHED 或 NOT_MATCHED 或 NEED_CONFIRM","reason":"判断原因","suggestion":{"kind":"REWRITE 或 CONFIRM 或 NONE","original_passage":"原段落（REWRITE 时填）","suggested_passage":"建议段落（REWRITE 时填）","rewrite_reason":"修改理由（REWRITE 时填）","confirmation_question":"补充问题（CONFIRM 时填）"}}
             """;
 
     private final AnalysisRepository analysisRepository;
@@ -88,6 +90,7 @@ public class AnalysisService {
         analysis.setJobId(jobId);
         analysis.setResumeSnapshot(resume.getContent());
         analysis.setJobSnapshot(job.getTitle() + "\n" + job.getDescription());
+        analysis.setDraftContent(resume.getContent());
         analysis.setStatus("RUNNING");
         analysisRepository.save(analysis);
 
@@ -108,6 +111,20 @@ public class AnalysisService {
                 .toList();
     }
 
+    public List<AnalysisResponse> listByUser(Long userId) {
+        return analysisRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::toResponseWithDetails)
+                .toList();
+    }
+
+    public void delete(Long userId, Long id) {
+        Analysis analysis = analysisRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ApiException(404, "分析不存在"));
+        requirementRepository.findByAnalysisIdOrderBySeq(id).forEach(requirementRepository::delete);
+        suggestionRepository.findByAnalysisId(id).forEach(suggestionRepository::delete);
+        analysisRepository.delete(analysis);
+    }
+
     public AnalysisResponse retry(Long userId, Long id) {
         Analysis analysis = analysisRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ApiException(404, "分析不存在"));
@@ -120,6 +137,33 @@ public class AnalysisService {
         analysisRepository.save(analysis);
         analysisExecutor.execute(() -> process(analysis.getId()));
         return toResponse(analysis);
+    }
+
+    public AnalysisResponse updateDraft(Long userId, Long id, String content) {
+        Analysis analysis = analysisRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ApiException(404, "分析不存在"));
+        analysis.setDraftContent(content);
+        analysisRepository.save(analysis);
+        return toResponse(analysis);
+    }
+
+    public String export(Long userId, Long id) {
+        Analysis analysis = analysisRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ApiException(404, "分析不存在"));
+        String draft = analysis.getDraftContent() == null ? "" : analysis.getDraftContent();
+        if (draft.trim().startsWith("#")) {
+            return draft;
+        }
+        String resumeName = analysis.getResumeSnapshot() == null ? "简历" : firstLine(analysis.getResumeSnapshot());
+        return "# " + resumeName + "\n\n" + draft;
+    }
+
+    private String firstLine(String s) {
+        if (s == null) {
+            return "";
+        }
+        String line = s.split("\n", 2)[0].trim();
+        return line.replaceAll("^#+\\s*", "");
     }
 
     private void process(Long analysisId) {
@@ -166,7 +210,7 @@ public class AnalysisService {
                 analysis.setErrorMessage(classifyError(e));
             }
         }
-        analysis.setCompletedAt(LocalDateTime.now());
+        analysis.setCompletedAt(Instant.now());
         analysisRepository.save(analysis);
     }
 
@@ -260,6 +304,10 @@ public class AnalysisService {
             requirementRepository.save(jr);
 
             LlmSuggestion sug = req.suggestion();
+            // 防御：未体现的要求不给改写建议（只提示缺口），避免把缺失项写成事实
+            if ("NOT_MATCHED".equals(matchStatus) && sug != null && "REWRITE".equals(sug.kind())) {
+                sug = null;
+            }
             if (sug != null && sug.kind() != null && !"NONE".equals(sug.kind())) {
                 Suggestion s = new Suggestion();
                 s.setAnalysisId(analysis.getId());
@@ -324,7 +372,9 @@ public class AnalysisService {
     private AnalysisResponse toResponse(Analysis a) {
         return new AnalysisResponse(
                 a.getId(), a.getStatus(), a.getErrorMessage(),
-                a.getCreatedAt(), a.getCompletedAt(), List.of(), List.of());
+                a.getCreatedAt(), a.getCompletedAt(),
+                a.getResumeId(), a.getJobId(), a.getResumeSnapshot(), a.getJobSnapshot(), a.getDraftContent(),
+                List.of(), List.of());
     }
 
     private AnalysisResponse toResponseWithDetails(Analysis a) {
@@ -341,7 +391,9 @@ public class AnalysisService {
                 .toList();
         return new AnalysisResponse(
                 a.getId(), a.getStatus(), a.getErrorMessage(),
-                a.getCreatedAt(), a.getCompletedAt(), reqs, sugs);
+                a.getCreatedAt(), a.getCompletedAt(),
+                a.getResumeId(), a.getJobId(), a.getResumeSnapshot(), a.getJobSnapshot(), a.getDraftContent(),
+                reqs, sugs);
     }
 
     private record LlmResponse(List<LlmRequirement> requirements) {
